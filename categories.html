@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CartPlan - Категории</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h1>📂 Управление категориями</h1>
+<p><a href="/">← На главную</a></p>
+
+<h3>Добавить свою категорию</h3>
+<form action="/categories/add" method="post">
+    <input type="text" name="name" placeholder="Название" required>
+    <button type="submit">➕ Добавить</button>
+</form>
+
+<h3>Список категорий</h3>
+{% for cat in categories %}
+    <div {% if cat.is_system == 1 %}style="color: #888;"{% endif %}>
+        <b>{{ cat.name }}</b>
+        {% if cat.is_system == 1 %}
+            <span style="font-size: 0.9em;">(базовая)</span>
+        {% else %}
+            <form action="/categories/delete/{{ cat.id }}" method="post" style="display:inline;">
+                <button type="submit" onclick="return confirm('Удалить категорию?')">🗑 Удалить</button>
+            </form>
+        {% endif %}
+    </div>
+    <hr>
+{% endfor %}
+</body>
+</html>

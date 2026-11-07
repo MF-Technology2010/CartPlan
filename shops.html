@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartCart - Магазины</title>
+</head>
+<body>
+<h1>🏪 Управление магазинами</h1>
+<p><a href="/">← На главную</a></p>
+<h3>Добавить магазин</h3>
+<form action="/shops/add" method="post">
+    <input type="text" name="name" placeholder="Название" required>
+    <button type="submit">Добавить</button>
+</form>
+<h3>Список магазинов</h3>
+{% for shop in shops %}
+    <div>
+        <b>{{ shop.name }}</b>
+        <form action="/shops/delete/{{ shop.id }}" method="post" style="display:inline;">
+            <button type="submit" onclick="return confirm('Удалить магазин?')">🗑 Удалить</button>
+        </form>
+    </div>
+    <hr>
+{% endfor %}
+</body>
+</html>
