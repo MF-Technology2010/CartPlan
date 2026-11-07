@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartCart</title>
+</head>
+<body>
+<h1>🛒 SmartCart</h1>
+<p>
+    <a href="/categories">📂 Категории</a> | 
+    <a href="/shops">🏪 Магазины</a>
+</p>
+<div style="background:#e8f5e9; padding:10px; margin:10px 0; border-radius:5px;">
+    <b>📋 Списки покупок:</b>
+    {% for lst in all_lists %}
+        <span style="margin: 0 10px;">
+            {% if lst.is_active == 1 %}
+                <b>✅ {{ lst.name }}</b>
+            {% else %}
+                <a href="/set_active_list/{{ lst.id }}">{{ lst.name }}</a>
+            {% endif %}
+            <form action="/lists/delete/{{ lst.id }}" method="post" style="display:inline;">
+                <button type="submit" onclick="return confirm('Удалить список?')">🗑</button>
+            </form>
+        </span>
+    {% endfor %}
+    <form action="/create_list" method="post" style="display:inline; margin-left:20px;">
+        <input type="text" name="name" placeholder="Новый список" required>
+        <button type="submit">➕ Создать</button>
+    </form>
+</div>
+<p>
+{% if budget > 0 %}
+    💰 Бюджет: {{ budget }} руб | План (активные): {{ planned_active }} руб | Остаток: {{ remaining }} руб
+{% else %}
+    💰 Бюджет не задан. Введите сумму:
+{% endif %}
+</p>
+
+<form action="/set_budget" method="post" style="display:inline;">
+    <input type="number" step="0.01" name="budget" placeholder="Новый бюджет" required>
+    <button type="submit">Изменить бюджет</button>
+</form>
+
+<h3>Добавить товар</h3>
+
+<form action="/add" method="post">
+    <input type="text" name="name" placeholder="Название" required>
+    <input type="number" step="0.01" name="price" placeholder="Цена" required>
+    <input type="number" step="0.01" name="quantity" placeholder="Кол-во" required>
+    <select name="shop">
+        {% for shop in shops %}
+            <option value="{{ shop.name }}">{{ shop.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="category">
+        {% for cat in categories_list %}
+            <option value="{{ cat.name }}">{{ cat.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Добавить</button>
+</form>
+
+<h3>Фильтр и сортировка</h3>
+<form action="/" method="get">
+    <select name="shop">
+        <option value="">Все магазины</option>
+        {% for shop in shops %}
+            <option value="{{ shop.name }}" {% if shop.name == shop_filter %}selected{% endif %}>{{ shop.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="sort">
+        <option value="">Без сортировки</option>
+        <option value="cost_desc" {% if sort_by == 'cost_desc' %}selected{% endif %}>Сначала дорогие</option>
+        <option value="cost_asc" {% if sort_by == 'cost_asc' %}selected{% endif %}>Сначала дешёвые</option>
+    </select>
+    <button type="submit">Применить</button>
+</form>
+
+<h3>Список покупок</h3>
+
+{% for item in items %}
+    <div>
+        <b>{{ item.name }}</b><br>
+        План: {{ item.price }} × {{ item.quantity }} = {{ item.planned_cost }} руб<br>
+🏪 {{ item.shop }}<br>
+📂 {{ item.category }}<br>
+        {% if item.is_purchased %}
+            ✅ Куплено за {{ item.actual_cost }} руб
+        {% else %}
+            <form action="/purchase/{{ item.id }}" method="post" style="display:inline;">
+                <input type="number" step="0.01" name="actual_cost" placeholder="Факт. цена" required>
+                <button type="submit">💰 Куплено</button>
+            </form>
+        {% endif %}
+        <form action="/delete/{{ item.id }}" method="post" style="display:inline;">
+            <button type="submit" onclick="return confirm('Точно удалить?')">🗑 Удалить</button>
+        </form>
+    </div>
+    <hr>
+{% endfor %}
+</body>
+</html>
