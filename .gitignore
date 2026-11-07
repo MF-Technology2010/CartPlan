@@ -1,0 +1,43 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+.idea/
+
+**/build/
+
+# Local Android project copy (actual project is in /android)
+ /app/
+ /gradle/
+ /build.gradle.kts
+ /gradle.properties
+ /gradlew
+ /gradlew.bat
+ /settings.gradle.kts
+
+# Local Android project copy (actual project is in /android)
+/app/
+/gradle/
+/build.gradle.kts
+/gradle.properties
+/gradlew
+/gradlew.bat
+/settings.gradle.kts
+
+# Android release artifacts
+/android/app/release/
+
+# Android release artifacts
+/android/app/release/
