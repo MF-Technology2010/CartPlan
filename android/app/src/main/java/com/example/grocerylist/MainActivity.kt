@@ -55,6 +55,7 @@ fun SmartCartApp(modifier: Modifier = Modifier) {
     var newCatName by remember { mutableStateOf("") }
     var showListManager by remember { mutableStateOf(false) }
     var newListName by remember { mutableStateOf("") }
+    var listCreateError by remember { mutableStateOf("") }
     var renameListId by remember { mutableStateOf(0) }
     var renameListName by remember { mutableStateOf("") }
     var showRenameDialog by remember { mutableStateOf(false) }
@@ -102,7 +103,7 @@ fun SmartCartApp(modifier: Modifier = Modifier) {
                 val catsJson = JSONArray(catsResponse.body?.string() ?: "[]")
                 val catsTemp = mutableListOf<String>()
                                 for (i in 0 until catsJson.length()) {
-                    catsTemp.add(catsJson.getString(i))
+                    catsTemp.add(catsJson.getJSONObject(i).getString("name"))
                 }
                 val listsRequest = Request.Builder()
                     .url("https://app.cartplan.ru/lists")
@@ -523,23 +524,52 @@ fun SmartCartApp(modifier: Modifier = Modifier) {
                             OutlinedTextField(value = newListName, onValueChange = { newListName = it },
                                 label = { Text("Новый список") }, modifier = Modifier.weight(1f))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = {
-                                if (newListName.isNotBlank()) {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        try {
-                                            val client = OkHttpClient()
-                                            val form = FormBody.Builder().add("name", newListName).build()
-                                            val request = Request.Builder()
-                                                .url("https://app.cartplan.ru/lists/create")
-                                                .post(form).build()
-                                            client.newCall(request).execute()
-                                            withContext(Dispatchers.Main) { newListName = ""; loadItems() }
-                                        } catch (e: Exception) { e.printStackTrace() }
-                                    }
-                                }
-                            }) { Text("Создать") }
+                                                            Button(onClick = {
+    if (newListName.isNotBlank()) {
+        listCreateError = ""
+        val listName = newListName.trim()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val client = OkHttpClient()
+                val form = FormBody.Builder()
+                    .add("name", listName)
+                    .build()
+
+                val request = Request.Builder()
+                    .url("https://app.cartplan.ru/lists/create")
+                    .post(form)
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            newListName = ""
+                            loadItems()
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            listCreateError = "Ошибка сервера: ${response.code}"
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    listCreateError = "Ошибка соединения: ${e.message}"
+                }
+            }
+        }
+    }
+}) { Text("Создать") }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
+			if (listCreateError.isNotBlank()) {
+    Text(
+        text = listCreateError,
+        color = MaterialTheme.colorScheme.error,
+        modifier = Modifier.padding(vertical = 4.dp)
+    )
+}
                         allLists.forEach { lst ->
                             val isActive = lst.getInt("is_active") == 1
                             Row(verticalAlignment = Alignment.CenterVertically) {
