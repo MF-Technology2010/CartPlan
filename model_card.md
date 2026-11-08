@@ -1,141 +1,311 @@
-# Model Card — CartPlan Product Recommendation Model
+# Карточка модели (Model Card) --- модель рекомендаций товаров CartPlan
 
-**Project:** CartPlan  
-**Model status:** Proposed design / prototype stage  
-**Model type:** Hybrid recommender system (Content-Based Filtering + Collaborative Filtering)  
-**Document purpose:** Describe the intended model and its role in CartPlan. This document does not claim that the model has already been trained or deployed.
+**Проект:** CartPlan\
+**Статус модели:** проектирование / стадия прототипа\
+**Тип модели:** гибридная рекомендательная система (Content-Based
+Filtering + Collaborative Filtering)\
+**Назначение документа:** описание планируемой модели и её роли в
+CartPlan. Документ не утверждает, что модель уже обучена или внедрена.
 
-## 1. Model overview
+## 1. Обзор модели
 
-The CartPlan recommendation model is intended to suggest products that may be useful to a user when they create or update a shopping list. It uses two complementary signals:
+Модель рекомендаций CartPlan предназначена для предложения товаров,
+которые могут быть полезны пользователю при создании или обновлении
+списка покупок. В модели планируется использовать два взаимодополняющих
+источника сигналов:
 
-1. **Content-based component:** estimates similarity between products using available product attributes and taxonomy (for example, category, aisle, department, and other attributes available in the data).
-2. **Collaborative component:** identifies products that are often purchased together or by users with similar purchase patterns, using aggregated order histories.
+1.  **Компонент Content-Based Filtering (на основе содержания):**
+    оценивает сходство товаров по доступным атрибутам и таксономии
+    каталога (например, категории, отделу, товарной группе и другим
+    характеристикам, присутствующим в данных).
+2.  **Компонент Collaborative Filtering (коллаборативная фильтрация):**
+    выявляет товары, которые часто покупают вместе, а также товары,
+    характерные для пользователей со схожими покупательскими паттернами.
+    Для этого используются агрегированные данные о заказах.
 
-The components are combined into a ranked list. The exact weighting and algorithm configuration will be selected during offline experiments and recorded with each model version.
+Результаты работы двух компонентов объединяются в ранжированный список
+рекомендаций. Конкретные веса компонентов и настройки алгоритмов будут
+выбраны в ходе офлайн-экспериментов и зафиксированы для каждой версии
+модели.
 
-## 2. Intended use
+## 2. Предполагаемое использование
 
-### Primary use
-- Recommend relevant products to a CartPlan user while preparing a shopping list.
-- Help users discover products they may have forgotten or may commonly purchase together with items already in the list.
-- Provide a ranked set of suggestions that the user can accept or ignore.
+### Основные сценарии использования
 
-### Out of scope
-- Automatically adding products to a shopping list without user confirmation.
-- Predicting medical, dietary, financial, or other sensitive characteristics.
-- Guaranteeing product availability, current prices, or suitability for a particular person.
-- Replacing the user's decision or acting as a nutrition or health adviser.
+-   Рекомендация подходящих товаров пользователю CartPlan при подготовке
+    списка покупок.
+-   Помощь в поиске товаров, о которых пользователь мог забыть или
+    которые часто покупают вместе с уже добавленными в список товарами.
+-   Формирование упорядоченного списка предложений, которые пользователь
+    может принять или отклонить.
 
-## 3. Problem statement
+### Сценарии, не входящие в область применения
 
-A user may not remember every product needed for a planned shopping trip. CartPlan can use patterns in previous baskets and relationships between products to generate contextually relevant suggestions.
+-   Автоматическое добавление товаров в список покупок без подтверждения
+    пользователя.
+-   Определение медицинских, диетических, финансовых или иных
+    чувствительных характеристик пользователя.
+-   Гарантирование наличия товара, актуальности его цены или
+    соответствия индивидуальным потребностям конкретного человека.
+-   Подмена решения пользователя, а также выполнение функций
+    консультанта по питанию или здоровью.
 
-This is a ranking/recommendation task: given a user's recent purchase context and/or the current list, rank candidate products by estimated relevance.
+## 3. Описание решаемой задачи
 
-## 4. Users and stakeholders
+При подготовке к покупке пользователь может забыть о некоторых
+необходимых товарах. CartPlan может использовать закономерности из
+предыдущих покупок и связи между товарами, чтобы сформировать контекстно
+релевантные предложения.
 
-- **End user:** a CartPlan user who creates and manages shopping lists in the Android or web application.
-- **Application:** CartPlan backend, which receives recommendation requests and returns ranked suggestions through an API.
-- **Project team:** responsible for data preparation, model evaluation, deployment, monitoring, and version management.
+По своей сути это задача рекомендаций и ранжирования: на основании
+контекста недавних покупок пользователя и/или текущего списка покупок
+модель упорядочивает возможные товары-кандидаты по предполагаемой
+релевантности.
 
-## 5. Input data
+## 4. Пользователи и заинтересованные стороны
 
-The planned model may use the following data, subject to availability and data-quality checks:
+-   **Конечный пользователь:** пользователь CartPlan, который создаёт и
+    редактирует списки покупок в Android-приложении или веб-версии.
+-   **Приложение:** серверная часть CartPlan (backend), которая получает
+    запросы на рекомендации и возвращает ранжированные предложения через
+    API.
+-   **Команда проекта:** отвечает за подготовку данных, оценку качества
+    модели, развёртывание, мониторинг и управление версиями.
 
-| Input | Description | Example |
-|---|---|---|
-| Current list | Products already added to the active list | milk, bread |
-| Purchase history | Previous orders associated with the user | product IDs and order sequence |
-| Product identifier | Stable product ID | product_id |
-| Product taxonomy | Category, aisle, department or equivalent attributes | dairy, bakery |
-| Interaction signals | Purchase/reorder events and their frequency | product was reordered |
-| Context | Optional non-sensitive context, such as list contents | current basket |
+## 5. Входные данные
 
-For the prototype, the planned public dataset is **Instacart Market Basket Analysis**. It contains anonymized order-level purchase records and product/category information. It is an experimental source, not CartPlan user data.
+Планируемая модель может использовать перечисленные ниже данные при
+условии их доступности и прохождения проверок качества.
 
-For production use, the model must be trained and evaluated using appropriately collected CartPlan interaction and purchase history, subject to consent, privacy, retention, and access rules.
+  -----------------------------------------------------------------------
+  Входные данные          Описание                Пример
+  ----------------------- ----------------------- -----------------------
+  Текущий список          Товары, уже добавленные молоко, хлеб
+                          в активный список       
 
-## 6. Output
+  История покупок         Предыдущие заказы       идентификаторы товаров
+                          пользователя            и последовательность
+                                                  заказов
 
-The model returns a ranked list of candidate products, for example:
+  Идентификатор товара    Уникальный              `product_id`
+                          идентификатор товара    
 
-- product ID;
-- relevance score or rank;
-- optional reason/category label, if supported by the implementation.
+  Таксономия товаров      Категория, отдел,       молочные продукты,
+                          товарная группа или     хлебобулочные изделия
+                          аналогичные атрибуты    
 
-The backend maps product IDs to CartPlan catalogue records and returns display-ready data to the client. The Android or web application displays suggestions; the user decides whether to add an item.
+  Сигналы взаимодействия  События покупки и       товар был заказан
+                          повторного заказа, а    повторно
+                          также их частота        
 
-The model does not create or modify a shopping list by itself.
+  Контекст                Дополнительный          текущая корзина
+                          необязательный          
+                          контекст, не            
+                          относящийся к           
+                          чувствительным данным,  
+                          например состав списка  
+  -----------------------------------------------------------------------
 
-## 7. Model architecture and inference flow
+Для прототипа планируется использовать открытый набор данных **Instacart
+Market Basket Analysis**. Он содержит обезличенные записи о покупках на
+уровне заказов, а также сведения о товарах и их категориях. Этот набор
+данных используется только как экспериментальный источник и не является
+пользовательскими данными CartPlan.
 
-1. The client sends the current list context and an authorized user/context identifier to the CartPlan backend.
-2. The backend validates the request and obtains the required product/history features.
-3. The content-based component scores candidate products by similarity to the current list and relevant product attributes.
-4. The collaborative component scores candidates using co-occurrence and purchase-pattern signals.
-5. The hybrid ranking combines the component scores, applies exclusions (for example, products already on the list), and selects the top-N candidates.
-6. The backend returns ranked product suggestions through the recommendation API.
-7. The client displays the suggestions and records user interactions where appropriate.
+Для промышленного использования модель должна обучаться и оцениваться на
+корректно собранной истории взаимодействий и покупок в CartPlan с
+соблюдением требований к согласию пользователей, конфиденциальности,
+срокам хранения и правилам доступа к данным.
 
-The model is intended to run server-side so Android and web clients use the same model version and recommendation logic.
+## 6. Выходные данные
 
-## 8. Training data and preparation
+Модель возвращает ранжированный список товаров-кандидатов. Для каждого
+предложения могут передаваться:
 
-### Prototype
-The proposed prototype uses Instacart Market Basket Analysis. Preparation steps:
-- inspect schema, data volume, missing values, and duplicate records;
-- map order records to product identifiers;
-- build product co-occurrence and user/order interaction features;
-- use a time-aware or order-based train/validation/test split to reduce information leakage;
-- ensure that evaluation uses only information available before the target order.
+-   идентификатор товара;
+-   оценка релевантности или позиция в рейтинге;
+-   необязательная метка с причиной рекомендации или категорией товара,
+    если такая возможность поддерживается реализацией.
 
-### Production
-The production dataset is expected to consist of CartPlan purchase/list interaction events, after the application has accumulated sufficient reliable history. User-level data must be access-controlled and processed in accordance with applicable privacy requirements.
+Серверная часть сопоставляет идентификаторы товаров с записями каталога
+CartPlan и возвращает клиентскому приложению данные, подготовленные для
+отображения. Android-приложение или веб-версия показывают предложения, а
+пользователь самостоятельно решает, добавлять ли товар в список.
 
-## 9. Evaluation
+Модель не создаёт и не изменяет список покупок самостоятельно.
 
-No measured quality results are claimed at this stage. The following metrics are proposed for offline evaluation:
+## 7. Архитектура модели и процесс формирования рекомендаций
 
-| Metric | What it measures | Why it is useful |
-|---|---|---|
-| Precision@K | Share of top-K recommendations that are relevant | Controls irrelevant suggestions |
-| Recall@K | Share of relevant items recovered in top K | Measures how many useful items are found |
-| MAP@K | Ranking quality across relevant items | Rewards placing relevant items higher |
-| NDCG@K | Position-sensitive ranking quality | Gives more credit to relevant items near the top |
-| Catalog coverage | Share of catalogue items that can be recommended | Detects overly narrow recommendations |
+1.  Клиентское приложение передаёт серверной части CartPlan контекст
+    текущего списка и авторизованный идентификатор пользователя или
+    контекста.
+2.  Backend проверяет запрос и получает необходимые признаки товаров и
+    истории покупок.
+3.  Компонент Content-Based Filtering оценивает товары-кандидаты по
+    степени сходства с текущим списком и доступным атрибутам товаров.
+4.  Компонент Collaborative Filtering оценивает товары на основе
+    совместной встречаемости в заказах и закономерностей покупательского
+    поведения.
+5.  Гибридный механизм ранжирования объединяет оценки двух компонентов,
+    исключает неподходящие варианты (например, товары, уже
+    присутствующие в списке) и выбирает Top-N рекомендаций.
+6.  Backend возвращает ранжированные предложения через API рекомендаций.
+7.  Клиентское приложение отображает предложения и, если это
+    предусмотрено реализацией, фиксирует взаимодействия пользователя с
+    ними.
 
-The model should be compared with a simple popularity/frequency baseline. Metrics, K values, split strategy, and acceptance thresholds must be fixed before model comparison. Final thresholds will be set after establishing a baseline; they are not invented in this card.
+Предполагается, что модель будет работать на сервере. Это позволит
+Android-приложению и веб-версии использовать одну и ту же версию модели
+и общую логику формирования рекомендаций.
 
-Online monitoring, when sufficient traffic exists, may additionally track recommendation impressions, click/add-to-list rate, dismissal rate, and latency. These product metrics complement offline ranking metrics and do not replace them.
+## 8. Данные для обучения и их подготовка
 
-## 10. Limitations and risks
+### Прототип
 
-- **Cold start:** new users and products have little or no interaction history. The content-based component and popularity fallback can help, but may not fully solve the problem.
-- **Sparse data:** many users may have short histories, limiting collaborative signals.
-- **Dataset mismatch:** Instacart data reflects another service and user population. Prototype results may not transfer to CartPlan.
-- **Catalogue mismatch:** public dataset taxonomy and products may differ from the CartPlan catalogue.
-- **Popularity bias:** frequent products may dominate recommendations, reducing diversity.
-- **Stale data:** purchase preferences and catalogue contents can change.
-- **Privacy:** production training must use only permitted data, with appropriate access controls and minimization.
-- **No guarantee of correctness:** recommendations are suggestions, not proof that a user needs or wants an item.
+Для разработки прототипа предлагается использовать набор данных
+Instacart Market Basket Analysis. Подготовка данных включает следующие
+этапы:
 
-## 11. Fairness, privacy, and responsible use
+-   анализ структуры и объёма данных, выявление пропусков и
+    дублирующихся записей;
+-   сопоставление записей о заказах с идентификаторами товаров;
+-   формирование признаков совместной встречаемости товаров и
+    взаимодействий на уровне пользователей и заказов;
+-   разделение данных на обучающую, валидационную и тестовую выборки с
+    учётом времени или последовательности заказов, чтобы снизить риск
+    утечки данных;
+-   проверка того, что при оценке модели используются только сведения,
+    которые были доступны до целевого заказа.
 
-The model is not intended to infer protected or sensitive characteristics. It should use only data necessary for product recommendation. User histories must not be exposed to other users. In production, the backend must enforce authentication and authorization before accessing personal histories; this is a production requirement and is not claimed as an already implemented MVP capability.
+### Промышленное использование
 
-## 12. Human oversight
+В перспективе набор данных для промышленной модели должен формироваться
+из событий взаимодействия с товарами и списками покупок CartPlan ---
+после того, как приложение накопит достаточную по объёму и качеству
+историю. Доступ к данным на уровне отдельных пользователей должен быть
+ограничен, а их обработка должна соответствовать применимым требованиям
+конфиденциальности.
 
-The user remains in control. Recommendations are displayed as optional suggestions and are added to a list only after an explicit user action.
+## 9. Оценка качества модели
 
-## 13. Deployment and monitoring
+На текущем этапе измеренные результаты качества модели не заявляются.
+Для последующей офлайн-оценки предлагается использовать следующие
+метрики:
 
-The target architecture places the model and inference API on the CartPlan server. Android and web clients call the same API. The model artifact must be versioned. Deployment should follow validation in a test environment, a controlled rollout, monitoring, and rollback capability.
+  -----------------------------------------------------------------------
+  Метрика                 Что измеряет            Практическая значимость
+  ----------------------- ----------------------- -----------------------
+  Precision@K             Долю релевантных        Позволяет
+                          рекомендаций среди      контролировать
+                          первых K предложений    количество
+                                                  нерелевантных
+                                                  рекомендаций
 
-The prototype may be developed and evaluated locally before server integration. The presence of this design document does not mean that model training, API integration, or production deployment has already taken place.
+  Recall@K                Долю найденных          Показывает, насколько
+                          релевантных товаров     полно модель находит
+                          среди всех релевантных  полезные товары
+                          товаров в пределах      
+                          первых K позиций        
 
-## 14. Version history
+  MAP@K                   Качество ранжирования с Поощряет размещение
+                          учётом позиций          релевантных товаров
+                          релевантных товаров     выше в списке
 
-| Version | Status | Description |
-|---|---|---|
-| 0.1 | Proposed | Initial design of a hybrid product recommendation model for CartPlan |
+  NDCG@K                  Качество ранжирования с Придаёт больший вес
+                          учётом позиции каждого  релевантным товарам,
+                          результата              расположенным ближе к
+                                                  началу списка
+
+  Catalog coverage (охват Долю товаров каталога,  Помогает выявлять
+  каталога)               которые модель в        чрезмерно узкий набор
+                          принципе способна       рекомендаций
+                          рекомендовать           
+  -----------------------------------------------------------------------
+
+Результаты модели необходимо сравнивать с простым базовым алгоритмом
+(baseline), основанным на популярности или частоте покупок товаров.
+Метрики, значения K, способ разделения данных и пороговые значения
+приемлемого качества должны быть определены до сравнения моделей.
+Итоговые пороги будут установлены после получения базовых результатов; в
+настоящем документе они намеренно не задаются произвольно.
+
+При появлении достаточного пользовательского трафика онлайн-мониторинг
+может дополнительно учитывать количество показов рекомендаций, долю
+переходов или добавлений товаров в список, долю отклонённых рекомендаций
+и время ответа системы. Эти продуктовые показатели дополняют
+офлайн-метрики ранжирования, но не заменяют их.
+
+## 10. Ограничения и риски
+
+-   **Проблема холодного старта (Cold Start):** у новых пользователей и
+    товаров отсутствует или почти отсутствует история взаимодействий.
+    Компонент Content-Based Filtering и резервный механизм на основе
+    популярности могут частично компенсировать эту проблему, но не
+    гарантируют её полного решения.
+-   **Разреженность данных (Sparse Data):** у многих пользователей может
+    быть короткая история покупок, что ограничивает количество полезных
+    сигналов для Collaborative Filtering.
+-   **Несоответствие набора данных (Dataset Mismatch):** данные
+    Instacart отражают поведение пользователей другого сервиса и другой
+    пользовательской аудитории. Результаты прототипа могут не
+    воспроизводиться на данных CartPlan.
+-   **Несоответствие каталога (Catalogue Mismatch):** таксономия и
+    перечень товаров в открытом наборе данных могут отличаться от
+    каталога CartPlan.
+-   **Смещение в сторону популярности (Popularity Bias):** часто
+    покупаемые товары могут доминировать в рекомендациях, снижая их
+    разнообразие.
+-   **Устаревание данных (Stale Data):** покупательские предпочтения и
+    состав каталога со временем могут меняться.
+-   **Конфиденциальность (Privacy):** при промышленном обучении должны
+    использоваться только разрешённые данные с надлежащим контролем
+    доступа и минимизацией обрабатываемой информации.
+-   **Отсутствие гарантии точности:** рекомендации являются
+    предложениями, а не подтверждением того, что пользователь
+    действительно нуждается в конкретном товаре или хочет его
+    приобрести.
+
+## 11. Справедливость, конфиденциальность и ответственное использование
+
+Модель не предназначена для определения защищённых законом или иных
+чувствительных характеристик пользователей. Для формирования
+рекомендаций должны использоваться только данные, необходимые для этой
+задачи. История покупок одного пользователя не должна быть доступна
+другим пользователям.
+
+В промышленной версии backend должен обеспечивать аутентификацию и
+авторизацию перед обращением к персональной истории покупок. Это
+требование к будущей промышленной реализации, а не утверждение о том,
+что соответствующая функциональность уже реализована в MVP.
+
+## 12. Контроль со стороны пользователя
+
+Пользователь сохраняет полный контроль над списком покупок. Рекомендации
+отображаются как необязательные предложения и добавляются в список
+только после явного действия пользователя.
+
+## 13. Развёртывание и мониторинг
+
+Целевая архитектура предполагает размещение модели и API формирования
+рекомендаций на сервере CartPlan. Android-приложение и веб-версия
+обращаются к одному API. Артефакт модели должен иметь версию,
+позволяющую отслеживать изменения и воспроизводить результаты.
+
+Развёртывание должно включать проверку в тестовой среде, контролируемое
+внедрение, мониторинг работы и возможность отката к предыдущей версии.
+
+Прототип может быть разработан и оценён локально до интеграции с
+сервером. Наличие настоящего документа не означает, что обучение модели,
+интеграция API или промышленное развёртывание уже выполнены.
+
+## 14. История версий
+
+  -----------------------------------------------------------------------
+  Версия                  Статус                  Описание
+  ----------------------- ----------------------- -----------------------
+  0.1                     Проект                  Первоначальное описание
+                                                  гибридной модели
+                                                  рекомендаций товаров
+                                                  для CartPlan
+
+  -----------------------------------------------------------------------
