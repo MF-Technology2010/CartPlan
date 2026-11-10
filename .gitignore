@@ -41,3 +41,16 @@ local.properties
 
 # Android release artifacts
 /android/app/release/
+
+# Python virtual environments
+ml/.venv/
+
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+ml/.pytest_cache/
+ml/.ruff_cache/
+

@@ -1,0 +1,31 @@
+[project]
+name = "cartplan-ml"
+version = "0.1.0"
+description = "Recommendation system for CartPlan"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "numpy>=2.3",
+    "pandas>=2.3",
+    "scikit-learn>=1.7",
+    "joblib>=1.5",
+]
+
+[tool.poetry]
+packages = [{ include = "cartplan_ml", from = "src" }]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4"
+ruff = "^0.14"
+pre-commit = "^4.4"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

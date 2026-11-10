@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.14
+    hooks:
+      - id: ruff
+        files: ^ml/
+        args: [--fix]
+      - id: ruff-format
+        files: ^ml/
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run tests
+        entry: poetry -C ml run pytest -q
+        language: system
+        pass_filenames: false
+        always_run: true
